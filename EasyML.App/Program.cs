@@ -21,5 +21,15 @@ var dataset = Enumerable.Range(0, 100).Select(
 		TotalSeconds = rnd.Next(60, 300)
 	});
 
-var result = ml.TrainAsync(dataset).Result;
+var task = ml.TrainAsync(dataset);
+task.Wait();
+
+if (task.Result.Result)
+{
+	//Your system is trained and ready
+}
+else
+{
+	//Check result.Error to get information about the error
+}
 var score = ml.Predict(dataset.First());

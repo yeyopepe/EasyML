@@ -5,5 +5,6 @@
 	/// </summary>
 	public class TrainingResult: TaskResult<bool>
 	{
+		public string SelectedAlgorithm { get; set; } //TODO:
 	}
 }
