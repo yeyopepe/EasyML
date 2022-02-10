@@ -3,21 +3,21 @@
 	<metadata>
 		<id>EasyML</id>
 		<title></title>
-		<version>1.0.0-beta1</version>
+		<version>1.0.0-beta2</version>
 		<authors>Sergio José Martínez Primiani</authors>
 		<owners>Sergio José Martínez Primiani</owners>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<projectUrl>https://github.com/yeyopepe/Many.Validators</projectUrl>
+		<projectUrl>https://github.com/yeyopepe/EasyML</projectUrl>
 		<iconUrl>https://www.nuget.org/Content/gallery/img/default-package-icon.svg</iconUrl>
 		<description>EasyML is a component to train a machine learning system and use it to get predictions with just a few lines of code.
 		The objective of this project is to facilitate the use of ML algorithms in any project by any developer with no knowledge about ML. 
 		It is basically a wrapper to allow devs to focus only in get advantage from this technology as fast as possible instead of getting lost themselves in the implementation details.
 		</description>
 		<tags>ML machine-learning machine learning IA AI ML.NET Regression Algorithm</tags>
-		<repository type="git" url="https://github.com/yeyopepe/Many.Mocks" />
-		<licenseUrl>https://github.com/yeyopepe/Many.Validators/blob/main/LICENSE.txt</licenseUrl>
+		<repository type="git" url="https://github.com/yeyopepe/EasyML" />
+		<licenseUrl>https://github.com/yeyopepe/EasyML/blob/main/LICENSE</licenseUrl>
 		<releaseNotes>
-			v.1.0.0-beta1
+			v.1.0.0-beta2
 			- Regression system
 		</releaseNotes>
 		
