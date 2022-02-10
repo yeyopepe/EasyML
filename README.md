@@ -121,9 +121,15 @@ var estimatedTotalSeconds = ml.Predict(request);
 - ML systems can consume a lot of time being trained (depending on how precise you want to be and how long you let it be trained). This operation can be done in parallel...
 
 ## Roadmap
-- Save and load datasets from files
-- Save and load trained model to/from files
-- Other implementations like multiclass classification, clustering, anomaly detection, etc..
+
+Feature										|Implemented|Version
+|-------------------------------------------|:---------:|:--------------:
+|Regression									|✅         |1.0.0
+|Save and load datasets from files			|❌         |
+|Save and load trained model to/from files  |❌         |
+|Other implementations like multiclass classification, clustering, anomaly detection, etc..  |❌         |
+
+
 
 ## Credits and more information
 This project uses Microsoft's *Microsoft.ML.AutoML* package, an implementation to create, train, evaluate and get predictions from ML models. 
