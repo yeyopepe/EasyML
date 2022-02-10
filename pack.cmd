@@ -1,0 +1,1 @@
+nuget pack .\EasyML.nuspec -Symbols -SymbolPackageFormat snupkg

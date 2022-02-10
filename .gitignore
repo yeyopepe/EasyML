@@ -1,0 +1,6 @@
+.vs/
+**/bin
+**/obj
+**/*.nupkg
+**/*.snupkg
+/nuget.exe
