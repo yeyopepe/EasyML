@@ -31,15 +31,17 @@ namespace EasyML.Test.Regression
 			Assert.AreEqual(expectedEvaluationDataSetSize, sut.EvaluationSet.Count(), "Evaluation dataset");
 		}
 
-		[TestCase(2, 10)]
-		[TestCase(2, 100)]
-		public void TrainAsync_DatasetAsEnumerable_ReturnsTrue(double trainingTimeInSeconds, int datasetSize)
+		[TestCase(2u, 10)]
+		[TestCase(2u, 100)]
+		[TestCase(10u, 100)]
+		public void TrainAsync_DatasetAsEnumerable_ReturnsTrue(uint trainingTimeInSeconds, int datasetSize)
 		{
 			//Test
 			var dataset = RegressionSystemFixture.GetRandomTrainingData(datasetSize);
 			Train(dataset: dataset,
 					out RegressionSystem<DataRowA> sut,
-					out TrainingResult? trainingResult);
+					out TrainingResult? trainingResult,
+					trainingTimeInSeconds: trainingTimeInSeconds);
 
 			//Assert
 			Assert.AreEqual(true, trainingResult.Result, "Unexpected result");

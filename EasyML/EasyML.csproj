@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ConsoleHelper.cs" />
     <Compile Remove="ProgressHandler.cs" />
   </ItemGroup>
 

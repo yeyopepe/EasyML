@@ -6,7 +6,7 @@ EasyML is a component to train a machine learning system and use it to get predi
 ## Features
 - Regression implementation: *A supervised machine learning implementation that is used to predict the value of a column (label) from a set of related features. The label can be of any real value.*
 - Async/parallel training in order to get your system always working.
-- Automatic selection of algorithm depending on system training. More data you provide and more time you allow your system train, more algorithms checked and better selection.
+- Automatic selection of algorithm depending on your data and time your system expends training.
 
 
 ## Basic workflow

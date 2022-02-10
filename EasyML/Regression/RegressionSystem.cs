@@ -171,13 +171,35 @@ namespace EasyML.Regression
 			//Console.WriteLine($"Running AutoML regression experiment for {maxTrainingTimeInSeconds} seconds...");
 			return await Task.Factory.StartNew(() =>
 			{
-				return _context.Auto()
+				var result = _context.Auto()
 				.CreateRegressionExperiment(maxTrainingTimeInSeconds)
 				.Execute(TransformedTrainingSet, labelColumnName: Configuration.PredictionColumnName);//, progressHandler: progressHandler);
 
-				//			PrintTopModels(experimentResult);
+				PrintTopModels(result); //TODO: tested trainers 
+				return result;
 			});
 		}
+		/// <summary>
+		/// Print top models from AutoML experiment.
+		/// </summary>
+		private static void PrintTopModels(ExperimentResult<RegressionMetrics> experimentResult)
+		{
+			// Get top few runs ranked by R-Squared.
+			// R-Squared is a metric to maximize, so OrderByDescending() is correct.
+			// For RMSE and other regression metrics, OrderByAscending() is correct.
+			var topRuns = experimentResult.RunDetails
+				.Where(r => r.ValidationMetrics != null && !double.IsNaN(r.ValidationMetrics.RSquared))
+				.OrderByDescending(r => r.ValidationMetrics.RSquared).Take(3);
+
+			Console.WriteLine("Top models ranked by R-Squared --");
+			ConsoleHelper.PrintRegressionMetricsHeader();
+			for (var i = 0; i < topRuns.Count(); i++)
+			{
+				var run = topRuns.ElementAt(i);
+				ConsoleHelper.PrintIterationMetrics(i + 1, run.TrainerName, run.ValidationMetrics, run.RuntimeInSeconds);
+			}
+		}
+
 		private ITransformer Evaluate(IEnumerable<TData> testData,
 										ExperimentResult<RegressionMetrics> model)
 		{
@@ -188,10 +210,10 @@ namespace EasyML.Regression
 			TransformedEvaluationSet = trainedModel.Transform(testDataView);
 
 			var answerObj = new Prediction();
-			_ = _context.Regression.Evaluate(TransformedEvaluationSet, labelColumnName: Configuration.PredictionColumnName, scoreColumnName: nameof(answerObj.Score));
+			var metrics = _context.Regression.Evaluate(TransformedEvaluationSet, labelColumnName: Configuration.PredictionColumnName, scoreColumnName: nameof(answerObj.Score));
 
-			//// Print metrics from top model
-			//ConsoleHelper.PrintRegressionMetrics(best.TrainerName, metrics);
+			//TODO: Selected trainer
+			ConsoleHelper.PrintRegressionMetrics(best.TrainerName, metrics);
 
 
 			return trainedModel;
