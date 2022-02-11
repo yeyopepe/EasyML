@@ -1,6 +1,6 @@
 ﻿using EasyML.Regression;
-using EasyML.Test.Models;
-using EasyML.Test.Regression;
+using EasyML.Test.Fixtures;
+using EasyML.Test.Fixtures.Models;
 using NUnit.Framework;
 using System;
 using System.Linq;

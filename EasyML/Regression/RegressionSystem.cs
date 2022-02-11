@@ -1,4 +1,5 @@
 ﻿using EasyML.Exceptions;
+using EasyML.Models;
 using Microsoft.ML;
 using Microsoft.ML.AutoML;
 using Microsoft.ML.Data;
@@ -10,7 +11,6 @@ using System.Threading.Tasks;
 
 namespace EasyML.Regression
 {
-	//TODO: Get training quality: progressHandler result (number of algorithms evaluated)
 	/// <summary>
 	/// Implements a machine learning system based on regression algorithms
 	/// </summary>
@@ -59,7 +59,7 @@ namespace EasyML.Regression
 		/// <summary>
 		/// Ctor.
 		/// </summary>
-		/// <param name="savedModel"></param>
+		/// <param name="savedModel">Saved model</param>
 		/// <param name="configuration">System's configuration</param>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="ArgumentException"></exception>
@@ -73,11 +73,11 @@ namespace EasyML.Regression
 			{
 				TrainedModel = _context.Model.Load(savedModel, out _);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				throw new ModelNotValidException($"Model content is not valid. More information: {ex.Message}", ex);
 			}
-			
+
 		}
 
 		/// <summary>
@@ -86,7 +86,7 @@ namespace EasyML.Regression
 		/// <exception cref="ArgumentException"></exception>
 		private void CheckTData()
 		{
-			foreach(var prop in typeof(TData).GetProperties())
+			foreach (var prop in typeof(TData).GetProperties())
 			{
 				if (prop.PropertyType != typeof(string) &&
 					prop.PropertyType != typeof(bool) &&
@@ -129,15 +129,18 @@ namespace EasyML.Regression
 		{
 			var result = new TrainingResult();
 
-			ExperimentResult<RegressionMetrics> model = null;
+			RegressionResult regression = null;
 			var step = "Training system...";
 			try
 			{
-				model = await CreateRegression(trainingData: _context.Data.LoadFromEnumerable(dataset),
-											maxTrainingTimeInSeconds: Configuration.MaxTrainingTimeInSeconds);
+				regression = await CreateRegression(trainingData: _context.Data.LoadFromEnumerable(dataset),
+													maxTrainingTimeInSeconds: Configuration.MaxTrainingTimeInSeconds);
+
+				result.TestedAlgorithms = regression.TestedAlgorithms;
+				result.SelectedAlgorithm = regression.SelectedAlgorithm;
 
 				step = "Evaluating trained model...";
-				TrainedModel = Evaluate(EvaluationSet, model);
+				TrainedModel = Evaluate(EvaluationSet, regression.Result);
 				step = "Saving trained model...";
 				SavedModel = Export();
 			}
@@ -146,19 +149,17 @@ namespace EasyML.Regression
 				result.Error = new MLEngineException($"Error in step '{step}'. More information: {ex.Message}", ex);
 			}
 
-			result.Result = model != null &&
+			result.Result = regression.Result != null &&
 							TrainedModel != null &&
 							result.Error == null;
 
 			return result;
 		}
 
-		private async Task<ExperimentResult<RegressionMetrics>> CreateRegression(IDataView trainingData,
-																					uint maxTrainingTimeInSeconds)
+		private async Task<RegressionResult> CreateRegression(IDataView trainingData,
+																uint maxTrainingTimeInSeconds)
 		{
-			// STEP 1: Build model
 			TransformedTrainingSet = trainingData;
-
 
 			//ConsoleHelper.ShowDataViewInConsole(mlContext, trainingDataView);
 
@@ -171,35 +172,42 @@ namespace EasyML.Regression
 			//Console.WriteLine($"Running AutoML regression experiment for {maxTrainingTimeInSeconds} seconds...");
 			return await Task.Factory.StartNew(() =>
 			{
-				var result = _context.Auto()
-				.CreateRegressionExperiment(maxTrainingTimeInSeconds)
-				.Execute(TransformedTrainingSet, labelColumnName: Configuration.PredictionColumnName);//, progressHandler: progressHandler);
+				var result = new RegressionResult();
+				try
+				{
+					var regression = _context.Auto()
+						.CreateRegressionExperiment(maxTrainingTimeInSeconds)
+						.Execute(TransformedTrainingSet, labelColumnName: Configuration.PredictionColumnName);//, progressHandler: progressHandler);
 
-				PrintTopModels(result); //TODO: tested trainers 
+					result.Result = regression;
+					result.TestedAlgorithms = GetTrainersByRSquared(regression);
+					result.SelectedAlgorithm = regression.BestRun.TrainerName;
+				}
+				catch (Exception ex)
+				{
+					result.Error = ex;
+				}
+
 				return result;
 			});
 		}
-		/// <summary>
-		/// Print top models from AutoML experiment.
-		/// </summary>
-		private static void PrintTopModels(ExperimentResult<RegressionMetrics> experimentResult)
+
+		private IEnumerable<Trainer> GetTrainersByRSquared(ExperimentResult<RegressionMetrics> experimentResult)
 		{
-			// Get top few runs ranked by R-Squared.
-			// R-Squared is a metric to maximize, so OrderByDescending() is correct.
-			// For RMSE and other regression metrics, OrderByAscending() is correct.
 			var topRuns = experimentResult.RunDetails
 				.Where(r => r.ValidationMetrics != null && !double.IsNaN(r.ValidationMetrics.RSquared))
-				.OrderByDescending(r => r.ValidationMetrics.RSquared).Take(3);
+				.OrderByDescending(r => r.ValidationMetrics.RSquared);
 
-			Console.WriteLine("Top models ranked by R-Squared --");
-			ConsoleHelper.PrintRegressionMetricsHeader();
+			var result = new List<Trainer>(topRuns.Count());
+
 			for (var i = 0; i < topRuns.Count(); i++)
 			{
 				var run = topRuns.ElementAt(i);
-				ConsoleHelper.PrintIterationMetrics(i + 1, run.TrainerName, run.ValidationMetrics, run.RuntimeInSeconds);
+				result.Add(run.ValidationMetrics.GetTrainerInfo(run.TrainerName, run.RuntimeInSeconds));
 			}
-		}
 
+			return result;
+		}
 		private ITransformer Evaluate(IEnumerable<TData> testData,
 										ExperimentResult<RegressionMetrics> model)
 		{
@@ -212,10 +220,6 @@ namespace EasyML.Regression
 			var answerObj = new Prediction();
 			var metrics = _context.Regression.Evaluate(TransformedEvaluationSet, labelColumnName: Configuration.PredictionColumnName, scoreColumnName: nameof(answerObj.Score));
 
-			//TODO: Selected trainer
-			ConsoleHelper.PrintRegressionMetrics(best.TrainerName, metrics);
-
-
 			return trainedModel;
 		}
 		#endregion Train
@@ -225,7 +229,7 @@ namespace EasyML.Regression
 		{
 			if (question == null)
 				throw new ArgumentNullException(nameof(question));
-			if (_context == null || 
+			if (_context == null ||
 				TrainedModel == null)
 				throw new SystemNotTrainedException();
 
@@ -245,6 +249,17 @@ namespace EasyML.Regression
 				_context.Model.Save(TrainedModel, TransformedTrainingSet.Schema, result);
 				return result;
 			});
+		}
+		/// <inheritdoc/>
+		public void Export(string savedModelPath)
+		{
+			var stream = Export();
+			stream.Seek(0, SeekOrigin.Begin);
+
+			using (var fs = new FileStream(savedModelPath, FileMode.OpenOrCreate))
+			{
+				stream.CopyTo(fs);
+			}
 		}
 
 		private T Export<T>(Func<T> exportFunc)
@@ -273,32 +288,32 @@ namespace EasyML.Regression
 			=> new RegressionSystem<TData>(configuration: configuration);
 
 		/// <summary>
-		/// Creates a new machine learning system
+		/// Creates a new machine learning system from a previously saved trained model. This methods does not restore the data, only the trained model to ask for predictions
 		/// </summary>
-		/// <param name="savedModel"></param>
+		/// <param name="savedModel">Saved model</param>
 		/// <param name="configuration">System's configuration</param>
 		/// <returns>Machine learning system</returns>
 		/// <exception cref="ArgumentException"></exception>
 		/// <exception cref="ArgumentNullException"></exception>
-		public static RegressionSystem<TData> CreateFromModel(Stream savedModel, Configuration<TData> configuration)
+		public static RegressionSystem<TData> Load(Stream savedModel, Configuration<TData> configuration)
 			=> new RegressionSystem<TData>(savedModel: savedModel, configuration: configuration);
 
 		/// <summary>
-		/// Creates a new machine learning system from a previous saved model
+		/// Creates a new machine learning system from a previously saved trained model. This methods does not restore the data, only the trained model to ask for predictions
 		/// </summary>
-		/// <param name="filename">Complete path to saved model</param>
+		/// <param name="saveModelPath">Complete path to saved model</param>
 		/// <param name="configuration">System's configuration</param>
 		/// <returns>Machine learning system</returns>
 		/// <exception cref="ArgumentException"></exception>
 		/// <exception cref="ArgumentNullException"></exception>
 		/// <exception cref="FileNotFoundException"></exception>
 		/// <exception cref="Exception"></exception>
-		public static RegressionSystem<TData> CreateFromModel(string filename, Configuration<TData> configuration)
+		public static RegressionSystem<TData> Load(string saveModelPath, Configuration<TData> configuration)
 		{
-			if (!File.Exists(filename))
-				throw new FileNotFoundException(nameof(filename));
+			if (!File.Exists(saveModelPath))
+				throw new FileNotFoundException(nameof(saveModelPath));
 
-			var str = new FileStream(filename, FileMode.Open);
+			var str = new FileStream(saveModelPath, FileMode.Open);
 
 			return new RegressionSystem<TData>(savedModel: str,
 										configuration: configuration);

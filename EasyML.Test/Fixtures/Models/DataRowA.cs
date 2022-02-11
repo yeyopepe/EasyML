@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EasyML.Test.Models
+namespace EasyML.Test.Fixtures.Models
 {
 	internal class DataRowA
     {

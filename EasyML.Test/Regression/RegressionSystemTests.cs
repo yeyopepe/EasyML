@@ -1,6 +1,8 @@
 using EasyML.Exceptions;
+using EasyML.Models;
 using EasyML.Regression;
-using EasyML.Test.Models;
+using EasyML.Test.Fixtures;
+using EasyML.Test.Fixtures.Models;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -51,6 +53,21 @@ namespace EasyML.Test.Regression
 			var result = sut.Predict(sample);
 			Assert.AreNotEqual(sample.Value, result.Score);
 		}
+		[TestCase(5u)]
+		public void TrainAsync_DatasetAsEnumerable_ReturnsAlgorithmsInfo(uint trainingTimeInSeconds)
+		{
+			//Test
+			var dataset = RegressionSystemFixture.GetRandomTrainingData(200);
+			Train(dataset: dataset,
+					out RegressionSystem<DataRowA> sut,
+					out TrainingResult? trainingResult,
+					trainingTimeInSeconds: trainingTimeInSeconds);
+
+			//Assert
+			Assert.AreEqual(true, trainingResult.Result, "Unexpected result");
+			Assert.IsFalse(string.IsNullOrWhiteSpace(trainingResult.SelectedAlgorithm), "SelectedAlgorithm");
+			Assert.AreEqual(true, trainingResult.TestedAlgorithms.Any(), "TestedAlgorithms");
+		}
 		[TestCase(1)]
 		[TestCase(2)]
 		[TestCase(3)]
@@ -86,7 +103,7 @@ namespace EasyML.Test.Regression
 		[Test]
 		public void TrainAsync_DatasetAsEnumerable_ErrorDuringTraining_ReturnsFalse()
 		{
-			//TODO: No sé cómo testear este caso...
+			//TODO: Waiting to get a way to test this case
 			Assert.Fail();
 
 			//Arrange
@@ -200,7 +217,7 @@ namespace EasyML.Test.Regression
 		}
 
 		[Test]
-		public void CreateFromModel()
+		public void Load_Stream()
 		{
 			//Arrange
 			//First system
@@ -217,7 +234,7 @@ namespace EasyML.Test.Regression
 			//Test
 			//New system loaded from a previous one
 			var configuration = RegressionSystemFixture.GetMinimalConfiguration();
-			var sut2 = RegressionSystem<DataRowA>.CreateFromModel(savedModel, configuration);
+			var sut2 = RegressionSystem<DataRowA>.Load(savedModel, configuration);
 
 			var predictionSystem2 = sut2.Predict(sample);
 
@@ -225,13 +242,13 @@ namespace EasyML.Test.Regression
 			Assert.AreEqual(predictionSystem1.Score, predictionSystem2.Score, "Unexpected score");
 		}
 		[Test]
-		public void CreateFromModel_EmptySavedModel_ThrowsException()
+		public void Load_Stream_EmptySavedModel_ThrowsException()
 		{
 			var configuration = RegressionSystemFixture.GetMinimalConfiguration();
-			Assert.Throws<ArgumentNullException>(() => _ = RegressionSystem<DataRowA>.CreateFromModel((Stream)null, configuration));
+			Assert.Throws<ArgumentNullException>(() => _ = RegressionSystem<DataRowA>.Load((Stream)null, configuration));
 		}
 		[Test]
-		public void CreateFromModel_InvalidSavedModel_ThrowsException()
+		public void Load_Stream_InvalidSavedModel_ThrowsException()
 		{
 			var configuration = RegressionSystemFixture.GetMinimalConfiguration();
 			
@@ -243,7 +260,34 @@ namespace EasyML.Test.Regression
 
 			writer.WriteLine("adfasdf");
 			
-			Assert.Throws<ModelNotValidException>(() => _ = RegressionSystem<DataRowA>.CreateFromModel(invalidModel, configuration));
+			Assert.Throws<ModelNotValidException>(() => _ = RegressionSystem<DataRowA>.Load(invalidModel, configuration));
+		}
+
+		[Test]
+		public void Load_File()
+		{
+			//Arrange
+			//First system
+			var dataset = RegressionSystemFixture.GetRandomTrainingData(100);
+			Train(dataset: dataset,
+					out RegressionSystem<DataRowA> sut1,
+					out TrainingResult? trainingResult);
+
+			var savedModelPath = @".\file.zip";
+			sut1.Export(savedModelPath);
+
+			var sample = dataset.First();
+			var predictionSystem1 = sut1.Predict(sample);
+
+			//Test
+			//New system loaded from a previous one
+			var configuration = RegressionSystemFixture.GetMinimalConfiguration();
+			var sut2 = RegressionSystem<DataRowA>.Load(savedModelPath, configuration);
+
+			var predictionSystem2 = sut2.Predict(sample);
+
+			//Assert
+			Assert.AreEqual(predictionSystem1.Score, predictionSystem2.Score, "Unexpected score");
 		}
 
 		[Test]
@@ -256,6 +300,8 @@ namespace EasyML.Test.Regression
 			//Test
 			Assert.Throws<ArgumentException>(() => _ = RegressionSystem<InvalidDataStructure>.Create(config));
 		}
+
+
 		private void Train(IEnumerable<DataRowA> dataset,
 						out RegressionSystem<DataRowA> sut,
 						out TrainingResult? trainingResult,
@@ -269,5 +315,7 @@ namespace EasyML.Test.Regression
 
 			trainingResult = sut.TrainAsync(dataset).Result;
 		}
+
+		
 	}
 }

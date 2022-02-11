@@ -24,6 +24,8 @@ var dataset = Enumerable.Range(0, 100).Select(
 var task = ml.TrainAsync(dataset);
 task.Wait();
 
+
+
 if (task.Result.Result)
 {
 	//Your system is trained and ready

@@ -1,4 +1,5 @@
 ﻿using EasyML.Exceptions;
+using EasyML.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -56,6 +57,13 @@ namespace EasyML
 		/// Exports the last trained model
 		/// </summary>
 		/// <returns>Last trained model</returns>
+		/// <exception cref="Exception"></exception>
 		Stream Export();
+		/// <summary>
+		/// Exports the last trained model and saved in a file
+		/// </summary>
+		/// <param name="savedModelPath">Complete path to file where savedModel will be saved (usually .zip file)</param>
+		/// <exception cref="Exception"></exception>
+		void Export(string savedModelPath);
 	}
 }

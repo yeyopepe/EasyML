@@ -7,8 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\EasyML\EasyML.csproj" />
+ <ItemGroup>
+    <PackageReference Include="EasyML" Version="1.0.0-beta2" />
   </ItemGroup>
 
 </Project>

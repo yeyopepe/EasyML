@@ -1,9 +1,9 @@
-﻿using EasyML.Test.Models;
+﻿using EasyML.Test.Fixtures.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EasyML.Test.Regression
+namespace EasyML.Test.Fixtures
 {
     internal class RegressionSystemFixture
 	{
