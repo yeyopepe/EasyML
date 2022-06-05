@@ -26,7 +26,9 @@ namespace EasyML.Test
 			Assert.AreEqual(true, trainingResult.Result, "Unexpected result");
 
 			//Test
-			var newDataset = RegressionSystemFixture.GetRandomTrainingData(500);
+			var newDataset = RegressionSystemFixture
+								.GetRandomTrainingData(500)
+								.ToArray();
 			var task = sut.UpdateAndTrainAsync(newDataset);
 
 			var rnd = new Random();

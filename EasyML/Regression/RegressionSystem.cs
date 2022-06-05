@@ -111,7 +111,7 @@ namespace EasyML.Regression
 
 		}
 		/// <inheritdoc/>
-		public async Task<TrainingResult> UpdateAndTrainAsync(IEnumerable<TData> newData)
+		public async Task<TrainingResult> UpdateAndTrainAsync(params TData[] newData)
 		{
 			if (newData == null || !newData.Any())
 				throw new ArgumentNullException(nameof(newData));

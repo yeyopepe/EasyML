@@ -142,7 +142,8 @@ namespace EasyML.Test.Regression
 					Type = sample.Type,
 					Other = sample.Other,
 					Value = sample.Value
-				});
+				})
+				.ToArray();
 			var trainingResult2 = sut.UpdateAndTrainAsync(newDataSet).Result;
 			Assert.AreEqual(true, trainingResult.Result, "Unexpected result");
 			Assert.IsNull(trainingResult.Error, "Unexpected error");

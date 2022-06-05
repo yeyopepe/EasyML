@@ -1,17 +1,6 @@
 ﻿using EasyML.App;
 using EasyML.Regression;
 
-try
-{
-	EasyML.App.A.Cities.Start().Wait();
-}
-catch (Exception ex)
-{
-
-}
-
-
-
 
 var x = "";
 var configuration = new EasyML.Configuration<OperationSummary>("TotalSeconds");
@@ -34,6 +23,10 @@ var dataset = Enumerable.Range(0, 100).Select(
 
 var task = ml.TrainAsync(dataset);
 task.Wait();
+
+
+
+
 
 
 

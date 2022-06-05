@@ -43,7 +43,7 @@ namespace EasyML
 		/// <param name="newData">New data to update the system and train again</param>
 		/// <returns>New training result</returns>
 		/// <exception cref="ArgumentNullException"></exception>
-		Task<TrainingResult> UpdateAndTrainAsync(IEnumerable<TData> newData);
+		Task<TrainingResult> UpdateAndTrainAsync(params TData[] newData);
 
 		/// <summary>
 		/// Predicts a value given a question 
