@@ -251,16 +251,7 @@ namespace EasyML.Regression
 			});
 		}
 		/// <inheritdoc/>
-		public void Export(string savedModelPath)
-		{
-			var stream = Export();
-			stream.Seek(0, SeekOrigin.Begin);
-
-			using (var fs = new FileStream(savedModelPath, FileMode.OpenOrCreate))
-			{
-				stream.CopyTo(fs);
-			}
-		}
+		public void Export(string savedModelPath)=> Export().Save(savedModelPath);
 
 		private T Export<T>(Func<T> exportFunc)
 		{

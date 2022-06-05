@@ -43,7 +43,7 @@ You need to create a new Configuration telling the type of data your system will
 ```
 var configuration = new EasyML.Configuration<OperationSummary>("TotalSeconds");
 ```
-You can also tune some other things (like the max time you allow your system to train). If you do not specify any value the system use the default ones.
+You can also tune some other things (like the max time you allow your system to be trained). If you do not specify any value the system use the default ones.
 
 After that you can get a instance of your system:
 ```
@@ -55,16 +55,13 @@ var ml = RegressionSystem<OperationSummary>.Create(configuration);
 In order to train your system for very first time you need to get an initial dataset (minimum 5 rows). You can store it in a file and parse it or whatever but at the end you need an IEnumerable with at least 5 rows.
 
 ```
-IEnumerable<OperationSummary> dataSet = GetYourData();
+IEnumerable<OperationSummary> dataSet = GetYourDataset();
 ```
 
 Now you can start to train your system: just call TrainAsync method, do whatever your want and wait for the task:
 
 ```
-var task = ml.TrainAsync(dataset); //This returns a Task
-
-//Do whatever your want
-
+var task = ml.TrainAsync(dataset); //This returns a Task you can wait
 task.Wait();
 
 if (task.Result.Result)
@@ -104,7 +101,7 @@ var estimatedTotalSeconds = ml.Predict(request);
 ```
 
 ### 5 - Improve your system
-Every time you finished a new operation (a get the real duration) you have a new record that you can use to improve your system. You can collect those data and train your system again in order to improve its future results. The way to do that is the same but using the method UpdateAndTrainAsync() in order to tell your system that it has to add the new data to the previous one.
+Every time you finished a new operation (a get the real duration) you can use your new record to improve your system. You can collect those data and train your system again in order to improve its future results. The way to do that is the same but using the method UpdateAndTrainAsync() in order to tell your system that it has to add the new data to the previous one.
 
 ```
 var task = ml.UpdateAndTrainAsync(newData); //A new task is triggered
@@ -159,8 +156,8 @@ var ml = RegressionSystem<OperationSummary>.Load(savedModelPath, configuration);
 Feature										|Implemented|Version
 |-------------------------------------------|:---------:|:--------------:
 |Regression									|✅         |1.0.0
-|Export and load trained model				|✅         |1.0.0
-|Save and load datasets from files			|❌         |
+|Export/Load trained model				|✅         |1.0.0
+|Export/Load trained model to/from files			|✅         |1.0.3
 |Other implementations like multiclass classification, clustering, anomaly detection, etc..  |❌         |
 
 
