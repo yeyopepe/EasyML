@@ -102,7 +102,7 @@ namespace EasyML.Regression
 			if (dataset == null || !dataset.Any())
 				throw new ArgumentNullException(nameof(dataset));
 			if (dataset.Count() < MIN_DATASET_ROWS)
-				throw new ArgumentOutOfRangeException(nameof(dataset));
+				throw new ArgumentOutOfRangeException($"{nameof(dataset)} has no enough rows. You need at least {MIN_DATASET_ROWS}");
 
 			var trainingSetSize = Convert.ToInt32(dataset.Count() * (1 - Configuration.EvaluationSetPercentage));
 			TrainingSet = dataset.Take(trainingSetSize);
