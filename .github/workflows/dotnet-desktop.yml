@@ -26,9 +26,10 @@ jobs:
             dotnet-version: ${{ matrix.dotnet-version }}
         - name: Install dependencies
           run: dotnet restore
-        
+        - name: Compile
+          run: dotnet build --configuration ${{ matrix.configuration }}
         - name: Test with dotnet
-          run: dotnet test --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
+          run: dotnet test **/*.Test.csproj --logger trx --results-directory "TestResults-${{ matrix.dotnet-version }}"
         - name: Upload dotnet test results
           uses: actions/upload-artifact@v3
           with:
